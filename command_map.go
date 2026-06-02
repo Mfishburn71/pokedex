@@ -9,14 +9,6 @@ import (
 //const defaultURL = "https://pokeapi.co/api/v2/location-area"
 //Moved to internal/pokeapi/location_get.go to keep a single variable
 
-type config struct {
-	Next          *string
-	Previous      *string
-	PokeAPIClient pokeapi.Client
-	PokemonInfo   pokeapi.PokemonInfo
-	Pokedex       map[string]pokeapi.PokemonInfo
-}
-
 func commandMap(cfg *config, args ...string) error {
 	url := pokeapi.BaseURL + "/location-area"
 	if cfg.Next != nil {

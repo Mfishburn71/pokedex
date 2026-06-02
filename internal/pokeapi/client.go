@@ -1,7 +1,7 @@
 package pokeapi
 
 import (
-	//"encoding/json"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,47 +14,17 @@ import (
 )
 
 type Client struct {
-	cache *pokecache.Cache
+	cache  *pokecache.Cache
+	cancel context.CancelFunc
 }
 
-func NewClient() Client {
+func NewClient(ctx context.Context) Client {
+	ctx, cancel := context.WithCancel(ctx)
 	return Client{
-		cache: pokecache.NewCache(5 * time.Second),
+		cache:  pokecache.NewCache(30*time.Minute, ctx),
+		cancel: cancel,
 	}
 }
-
-/* Legacy function - Kept for internal backup
-func (c *Client) clientRequestHelper(url string) (LocationAreasResp, error) {
-
-	cachedData, ok := c.cache.Get(url)
-	if ok {
-		var result LocationAreasResp
-		if err := json.Unmarshal(cachedData, &result); err != nil {
-			return LocationAreasResp{}, err
-		}
-		return result, nil
-	} else {
-		res, err := http.Get(url)
-		if err != nil {
-			return LocationAreasResp{}, fmt.Errorf("error making request: %w", err)
-		}
-		defer res.Body.Close()
-
-		data, err := io.ReadAll(res.Body)
-		if err != nil {
-			return LocationAreasResp{}, err
-		}
-		c.cache.Add(url, data)
-
-		var resp LocationAreasResp
-		if err := json.Unmarshal(data, &resp); err != nil {
-			return LocationAreasResp{}, err
-		}
-
-		return resp, nil
-	}
-
-}*/
 
 func (c *Client) getBytes(url string) ([]byte, error) {
 	// check cache with url key
@@ -96,3 +66,46 @@ func (c *Client) GetPokemon(pokemonName string) (PokemonInfo, error) {
 	}
 	return resp, nil
 }
+
+// /////////DEBUG COMAMNDS
+func (c *Client) GetLocationAreaRaw(name string) ([]byte, error) {
+	url := BaseURL + "/location-area/" + name
+	return c.getBytes(url)
+}
+
+func (c *Client) Stop() {
+	c.cancel()
+}
+
+/* Legacy function - Kept for internal backup
+func (c *Client) clientRequestHelper(url string) (LocationAreasResp, error) {
+
+	cachedData, ok := c.cache.Get(url)
+	if ok {
+		var result LocationAreasResp
+		if err := json.Unmarshal(cachedData, &result); err != nil {
+			return LocationAreasResp{}, err
+		}
+		return result, nil
+	} else {
+		res, err := http.Get(url)
+		if err != nil {
+			return LocationAreasResp{}, fmt.Errorf("error making request: %w", err)
+		}
+		defer res.Body.Close()
+
+		data, err := io.ReadAll(res.Body)
+		if err != nil {
+			return LocationAreasResp{}, err
+		}
+		c.cache.Add(url, data)
+
+		var resp LocationAreasResp
+		if err := json.Unmarshal(data, &resp); err != nil {
+			return LocationAreasResp{}, err
+		}
+
+		return resp, nil
+	}
+
+}*/

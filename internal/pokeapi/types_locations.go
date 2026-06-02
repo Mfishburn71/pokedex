@@ -1,13 +1,15 @@
 package pokeapi
 
 type LocationAreasResp struct {
-	Count    int     `json:"count"`
-	Next     *string `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
+	Count    int                   `json:"count"`
+	Next     *string               `json:"next"`
+	Previous *string               `json:"previous"`
+	Results  []LocationAreaSummary `json:"results"`
+}
+
+type LocationAreaSummary struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
 }
 
 type LocationArea struct {
@@ -26,6 +28,9 @@ type LocationArea struct {
 				MinLevel int `json:"min_level"`
 				MaxLevel int `json:"max_level"`
 			} `json:"encounter_details"`
+			Version struct {
+				Name string `json:"name"`
+			} `json:"version"`
 		} `json:"version_details"`
 	} `json:"pokemon_encounters"`
 	EncounterMethodRates []struct {

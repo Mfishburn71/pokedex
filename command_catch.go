@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strings"
+
+	"github.com/Mfishburn71/pokedex/internal/combat"
 )
 
 func commandCatch(cfg *config, args ...string) error {
@@ -29,14 +32,30 @@ func commandCatch(cfg *config, args ...string) error {
 
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
 
-	chance := 100 - resp.BaseExperience
-	if chance < 5 {
-		chance = 5
+	////Bonus for pokeball type
+	bonus := 0
+	switch cfg.CurrentBall {
+	case "greatball":
+		bonus = 15
+	case "ultraball":
+		bonus = 30
+	case "masterball":
+		bonus = 1000
+	default:
+		bonus = 0
+	}
+
+	chance := 100 - resp.BaseExperience + bonus
+	if chance < 15 {
+		chance = 15
 	}
 	roll := rand.Intn(100)
 
 	if roll < chance {
-		cfg.Pokedex[resp.Name] = resp
+		cfg.Pokedex[resp.Name] = combat.CaughtPokemon{
+			Pokemon:  resp,
+			BallType: cfg.CurrentBall,
+		}
 		fmt.Printf("%s was caught!\n", pokemonName)
 		//fmt.Println(cfg.Pokedex)
 	} else {
@@ -57,5 +76,33 @@ func commandPokedex(cfg *config, args ...string) error {
 	for _, name := range names {
 		fmt.Printf(" - %s\n", prettify(name))
 	}
+	return nil
+}
+
+func commandBall(cfg *config, args ...string) error {
+	if len(args) == 0 {
+		cfg.CurrentBall = "pokeball"
+		fmt.Println("No ball specified. Defaulting to pokeball")
+		return nil
+	}
+	if len(args) > 1 {
+		return errors.New("You can only throw one ball at a time!")
+	}
+
+	ball := strings.ToLower(strings.ReplaceAll(args[0], " ", ""))
+
+	validBalls := map[string]bool{
+		"pokeball": true, "greatball": true,
+		"ultraball": true, "masterball": true,
+	}
+	if !validBalls[ball] {
+		return errors.New("I don't have any data for that kind of pokeball")
+	}
+	if ball == "masterball" {
+		fmt.Println("You found a Master Ball!")
+	}
+	cfg.CurrentBall = ball
+
+	fmt.Printf("Equipped %s\n", prettify(cfg.CurrentBall))
 	return nil
 }

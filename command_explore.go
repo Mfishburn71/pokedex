@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/Mfishburn71/pokedex/internal/pokeapi"
 )
 
 func commandExplore(cfg *config, args ...string) error {
@@ -31,15 +33,16 @@ func commandExplore(cfg *config, args ...string) error {
 	habitats := make(map[string]struct{}) //Collect Habitat summary
 	region := make(map[string]struct{})   //Collect region data
 	levelRanges := []int{}
-	for _, rate := range location.EncounterMethodRates {
+	//for _, rate := range location.EncounterMethodRates {
+	for _, rate := range location.PokemonEncounters {
 		for _, vd := range rate.VersionDetails {
-			region[regionFor(vd.Version.Name)] = struct{}{}
+			region[pokeapi.RegionFor(vd.Version.Name)] = struct{}{}
 		}
 	}
 	for _, encounter := range location.PokemonEncounters {
 		for _, vd := range encounter.VersionDetails {
 			for _, ed := range vd.EncounterDetails {
-				habitats[habitatFor(ed.Method.Name)] = struct{}{}
+				habitats[pokeapi.HabitatFor(ed.Method.Name)] = struct{}{}
 				levelRanges = append(levelRanges, ed.MaxLevel)
 				levelRanges = append(levelRanges, ed.MinLevel)
 			}
@@ -62,7 +65,7 @@ func commandExplore(cfg *config, args ...string) error {
 		regionDisplay = strings.Join(regionList, ", ")
 	}
 	///print summary here
-	tier, avgLevel := levelFor(levelRanges)
+	tier, avgLevel := pokeapi.LevelFor(levelRanges)
 
 	fmt.Printf("%s is a %s (Level %d) area in the %s region with [%s] habitats.\n",
 		prettify(areaName),
@@ -88,7 +91,7 @@ func commandExplore(cfg *config, args ...string) error {
 			methodList = append(methodList, m)
 		}
 		sort.Strings(methodList)
-		fmt.Printf(" - %s [%s]\n", encounter.Pokemon.Name, strings.Join(methodList, ", "))
+		fmt.Printf(" - %s [%s]\n", prettify(encounter.Pokemon.Name), strings.Join(methodList, ", "))
 	}
 	return nil
 }
@@ -105,122 +108,4 @@ func prettify(s string) string {
 		}
 	}
 	return strings.Join(parts, " ")
-}
-
-// /////SPLIT THIS PART INTO HABITAT.GO WHEN NEEDED
-var methodToHabitat = map[string]string{
-	"walk":                "Land",
-	"roaming-grass":       "Land",
-	"surf":                "Water",
-	"old-rod":             "Water",
-	"good-rod":            "Water",
-	"super-rod":           "Water",
-	"rock-smash":          "Rocky",
-	"rough-terrain":       "Rocky",
-	"headbutt":            "Tree",
-	"headbutt-low":        "Tree",
-	"headbutt-normal":     "Tree",
-	"headbutt-high":       "Tree",
-	"honey-tree":          "Tree",
-	"dark-grass":          "Tall Grass",
-	"grass-spots":         "Tall Grass",
-	"cave":                "Cave",
-	"cave-spots":          "Cave",
-	"seaweed":             "Sea",
-	"roaming-water":       "Sea",
-	"feebas-tile-fishing": "Sea",
-	"overworld-water":     "Sea",
-	"super-rod-spots":     "Deep Sea",
-	"surf-spots":          "Deep Sea",
-	"only-one":            "Unique",
-	"gift":                "Gift",
-	"gift-egg":            "Gift",
-	"npc-trade":           "Gift",
-	// ...etc
-}
-
-var methodToRegion = map[string]string{
-	"red":               "Kanto",
-	"blue":              "Kanto",
-	"yellow":            "Kanto",
-	"gold":              "Johto",
-	"silver":            "Johto",
-	"crystal":           "Johto",
-	"ruby":              "Hoenn",
-	"sapphire":          "Hoenn",
-	"emerald":           "Hoenn",
-	"firered":           "Kanto",
-	"leafgreen":         "Kanto",
-	"diamond":           "Sinnoh",
-	"pearl":             "Sinnoh",
-	"platinum":          "Sinnoh",
-	"heartgold":         "Johto",
-	"soulsilver":        "Johto",
-	"black":             "Unova",
-	"white":             "Unova",
-	"colosseum":         "Orre",
-	"xd":                "Orre",
-	"black-2":           "Unova",
-	"white-2":           "Unova",
-	"x":                 "Kalos",
-	"y":                 "Kalos",
-	"omega-ruby":        "Hoenn",
-	"alpha-sapphire":    "Hoenn",
-	"sun":               "Alola",
-	"moon":              "Alola",
-	"ultra-sun":         "Alola",
-	"ultra-moon":        "Alola",
-	"lets-go-pikachu":   "Kanto",
-	"lets-go-eevee":     "Kanto",
-	"sword":             "Galar",
-	"shield":            "Galar",
-	"the-isle-of-armor": "Galar",
-	"the-crown-tundra":  "Galar",
-	"brilliant-diamond": "Sinnoh",
-	"shining-pearl":     "Sinnoh",
-	"legends-arceus":    "Hisui",
-	"scarlet":           "Paldea",
-	"violet":            "Paldea",
-	"the-teal-mask":     "Paldea",
-	"the-indigo-disk":   "Paldea",
-	"red-japan":         "Kanto",
-	"green-japan":       "Kanto",
-	"blue-japan":        "Kanto",
-	"legends-za":        "Kalos",
-	"mega-dimension":    "Kalos",
-	// ...etc
-}
-
-func habitatFor(method string) string {
-	if h, ok := methodToHabitat[method]; ok {
-		return h
-	}
-	return "Other" // safe fallback for unmapped methods
-}
-
-func regionFor(method string) string {
-	if h, ok := methodToRegion[method]; ok {
-		return h
-	}
-	return "Other" // safe fallback for unmapped methods
-}
-
-func levelFor(levelRange []int) (string, int) {
-	if len(levelRange) == 0 {
-		return "Unknown", 0
-	}
-	sorted := make([]int, len(levelRange))
-	copy(sorted, levelRange)
-	sort.Ints(sorted)
-	avg := levelRange[len(levelRange)/2] //returns the median
-	if avg < 21 {
-		return "Beginner", avg
-	}
-	if avg < 41 {
-		return "Intermediate", avg
-	}
-	if avg < 61 {
-		return "Advanced", avg
-	}
-	return "Deadly", avg // captures anything above 60
 }

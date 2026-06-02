@@ -24,18 +24,18 @@ func commandInspect(cfg *config, args ...string) error {
 		return errors.New("you have not caught that pokemon")
 	}
 
-	fmt.Printf("Name: %s\n", prettify(pokemon.Name))
-	fmt.Printf("Height: %d\n", pokemon.Height)
-	fmt.Printf("Weight: %d\n", pokemon.Weight)
-	fmt.Printf("Base Experience: %d\n", pokemon.BaseExperience)
+	fmt.Printf("Name: %s\n", prettify(displayName(pokemon)))
+	fmt.Printf("Height: %d\n", pokemon.Pokemon.Height)
+	fmt.Printf("Weight: %d\n", pokemon.Pokemon.Weight)
+	fmt.Printf("Base Experience: %d\n", pokemon.Pokemon.BaseExperience)
 
 	fmt.Println("Types:")
-	for _, t := range pokemon.Types {
+	for _, t := range pokemon.Pokemon.Types {
 		fmt.Printf("  - %s\n", prettify(t.Type.Name))
 	}
 
 	fmt.Println("Stats:")
-	for _, stat := range pokemon.Stats {
+	for _, stat := range pokemon.Pokemon.Stats {
 		fmt.Printf("  - %s: %d\n", prettify(stat.Stat.Name), stat.BaseStat)
 	}
 

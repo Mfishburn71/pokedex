@@ -1,6 +1,7 @@
 package pokecache
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -12,18 +13,17 @@ type cacheEntry struct {
 
 type Cache struct {
 	cacheMap map[string]cacheEntry
-	mux      sync.RWMutex //readWrite Mutex allows multiple readers
+	mux      sync.RWMutex
 	interval time.Duration
 }
 
-func NewCache(interval time.Duration) *Cache {
-
-	cacheObj := Cache{
+func NewCache(interval time.Duration, ctx context.Context) *Cache {
+	c := &Cache{
 		cacheMap: make(map[string]cacheEntry),
 		interval: interval,
 	}
-	go cacheObj.reapLoop()
-	return &cacheObj
+	go c.reapLoop(ctx)
+	return c
 }
 
 func (c *Cache) Add(key string, val []byte) {
@@ -39,22 +39,24 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 	elem, ok := c.cacheMap[key]
-	if ok == true {
-		return elem.val, true
-	}
-	return nil, false
-
+	return elem.val, ok
 }
 
-func (c *Cache) reapLoop() {
+func (c *Cache) reapLoop(ctx context.Context) {
 	ticker := time.NewTicker(c.interval)
-	for range ticker.C {
-		c.mux.Lock()
-		for key, entry := range c.cacheMap {
-			if time.Since(entry.createdAt) > c.interval {
-				delete(c.cacheMap, key)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			c.mux.Lock()
+			for key, entry := range c.cacheMap {
+				if time.Since(entry.createdAt) > c.interval {
+					delete(c.cacheMap, key)
+				}
 			}
+			c.mux.Unlock()
+		case <-ctx.Done():
+			return
 		}
-		c.mux.Unlock()
 	}
 }
