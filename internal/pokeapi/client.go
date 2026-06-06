@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"strings"
 	"time"
 
@@ -26,6 +23,7 @@ func NewClient(ctx context.Context) Client {
 	}
 }
 
+/* Moved to client_native to solve HTTP.GET problem in browser
 func (c *Client) getBytes(url string) ([]byte, error) {
 	// check cache with url key
 	data, ok := c.cache.Get(url)
@@ -50,6 +48,7 @@ func (c *Client) getBytes(url string) ([]byte, error) {
 		return data, nil
 	}
 }
+*/
 
 func (c *Client) GetPokemon(pokemonName string) (PokemonInfo, error) {
 	url := BaseURL + "/pokemon/" + pokemonName

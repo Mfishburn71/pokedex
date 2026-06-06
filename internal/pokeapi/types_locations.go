@@ -43,13 +43,19 @@ type LocationArea struct {
 }
 
 type PokemonInfo struct {
-	Name           string        `json:"name"`
-	BaseExperience int           `json:"base_experience"`
-	ID             int           `json:"id"`
-	Height         int           `json:"height"`
-	Weight         int           `json:"weight"`
-	Stats          []PokemonStat `json:"stats"`
-	Types          []PokemonType `json:"types"`
+	Name           string         `json:"name"`
+	BaseExperience int            `json:"base_experience"`
+	ID             int            `json:"id"`
+	Height         int            `json:"height"`
+	Weight         int            `json:"weight"`
+	Stats          []PokemonStat  `json:"stats"`
+	Types          []PokemonType  `json:"types"`
+	Sprites        PokemonSprites `json:"sprites"`
+}
+
+type PokemonSprites struct {
+	FrontDefault string `json:"front_default"`
+	FrontShiny   string `json:"front_shiny"`
 }
 
 type PokemonStat struct {

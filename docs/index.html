@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="wasm_exec.js"></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <div class="pokedex-container">
+
+       <!-- Left screen -->
+        <div class="screen-left" id="screen-left">
+            <div class="screen-content" id="left-content">
+                <!-- Sprite, lists, and contextual UI render here -->
+            </div>
+            <div class="scroll-indicator" id="scroll-indicator">▼</div>
+        </div>
+
+        <!-- Right top screen -->
+        <div class="screen-right" id="screen-right">
+            <div class="screen-content" id="right-content">
+                <!-- Trainer name, status messages -->
+            </div>
+        </div>
+
+        <!-- 10 blue buttons -->
+        <div class="button-grid" id="button-grid">
+            <button class="btn-blue" id="btn-pokedex">Pokedex</button>
+            <button class="btn-blue" id="btn-inspect">Inspect</button>
+            <button class="btn-blue" id="btn-catch">Catch</button>
+            <button class="btn-blue" id="btn-ball">Pokeballs</button>
+            <button class="btn-blue" id="btn-battle">Battle</button>
+            <button class="btn-blue" id="btn-map">Map</button>
+            <button class="btn-blue" id="btn-mapb">Map Back</button>
+            <button class="btn-blue" id="btn-explore">Explore</button>
+            <button class="btn-blue" id="btn-search">Search</button>
+            <button class="btn-blue" id="btn-region">Region</button>
+        </div>
+
+        <!-- 2 white buttons -->
+        <div class="button-white-group" id="button-white-group">
+            <button class="btn-white" id="btn-help">Help</button>
+            <button class="btn-white" id="btn-party">Party</button>
+            <button class="btn-white" id="btn-data">Trainer Data</button>
+        </div>
+
+    </div>
+
+    <!-- Trainer name modal -->
+    <div class="modal-overlay" id="name-modal">
+        <div class="modal-box">
+            <h2>Welcome, Trainer!</h2>
+            <p>What is your name?</p>
+            <input type="text" id="trainer-name-input" maxlength="20" placeholder="Enter your name...">
+            <button id="trainer-name-submit">Begin!</button>
+        </div>
+    </div>
+
+</body>
+</html>
